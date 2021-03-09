@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.springboot.avaliacao.model.TodoDTO;
 import com.springboot.avaliacao.repository.TodoRepository;
+import com.springboot.avaliacao.service.TodoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,9 @@ public class TodoController {
     @Autowired
     private TodoRepository todoRepo;
 
+    @Autowired
+    private TodoService todoService;
+
     @GetMapping("/todos")
     public ResponseEntity<?> getAllTodos() {
         List<TodoDTO> todos = todoRepo.findAll();
@@ -48,6 +52,7 @@ public class TodoController {
             todoRepo.save(todo);
             return new ResponseEntity<TodoDTO>(todo, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -55,11 +60,10 @@ public class TodoController {
     // localizar atraves do id
     @GetMapping("/todos/{id}")
     public ResponseEntity<?> getSingleTodo(@PathVariable("id") String id) {
-        Optional<TodoDTO> todoOptional = todoRepo.findById(id);
-        if (todoOptional.isPresent()) {
-            return new ResponseEntity<>(todoOptional.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Todo not found with id" + id, HttpStatus.NOT_FOUND);
+        try {
+            return new ResponseEntity<>(todoService.getSingleTodo(id), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
